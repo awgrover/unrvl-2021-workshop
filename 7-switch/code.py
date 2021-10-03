@@ -11,7 +11,7 @@ OFF = ( 0, 0, 0 )
 
 # set up
 # no setup for "touch"
-cp.pixels.brightness = 0.6 # 0.0 to 1.0
+cp.pixels.brightness 0.05 # 0.0 to 1.0
 cp.pixels[ 1 ] = OFF
 
 d1 = digitalio.DigitalInOut(board.D1)
