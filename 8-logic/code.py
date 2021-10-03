@@ -1,21 +1,22 @@
 """
-Variations on reacting to inputs.
+    Variations on reacting to inputs.
 
-Inputs:
+    Inputs:
 
-Touch A1: react
-Pressure/Resistance A0: brightness, react
-Digital A2: react
-Digital A3: react after a delay
-Digital A4: react sometimes
-Periodically: react if nothing else recently
+    Touch A1: react
+    Pressure/Resistance A0: brightness, react
+    Digital A2: react
+    Digital A3: react after a delay
+    Digital A4: react sometimes
+    Periodically: react if nothing else recently
 
-Outputs:
+    Outputs:
 
-Neopixel 0: brightness
-Neopixel 1: act
-Digital Pad A5: act
-Digital Pad A6/A7: alternating react 
+    Neopixel 2: brightness
+    Neopixel 1,3,4: act
+    Neopixels near inputs: flash green on inpu
+    Digital Pad A5: act
+    Digital Pad A6/A7: alternating react 
 
 """
 
@@ -49,10 +50,6 @@ neoA4 = 0
 neoA5 = 1
 neoA6 = 3
 neoA7 = 4
-cp.pixels[ neoA1 ] = OFF
-cp.pixels[ neoA5 ] = OFF
-cp.pixels[ neoA6 ] = OFF
-cp.pixels[ neoA7 ] = OFF
 
 plain_out = digitalio.DigitalInOut(board.A5)
 plain_out.switch_to_output()
@@ -78,14 +75,13 @@ SOMETIMES_RATE = 0.8 # aka "damping"
 
 duration = Timer(1.0)
 attractor = Timer(random.uniform(4.0, 6.0))
-attractor.start()
+attractor.start() # needs to start initially
 
 input_flashing = Timer(0.1)
 
 class Modes:
     # A list of things we could be doing
     # see `mode` variable
-    NULL = -1 # not used
     IDLE = 0 # not doing anything else
     ONCE = 1
     TOUCHA1 = 2
@@ -96,7 +92,7 @@ class Modes:
 
 
 mode = Modes.IDLE # what are we doing?
-was_mode = Modes.NULL
+was_mode = None
 
 # Functions
 def act_on():
@@ -212,7 +208,6 @@ while True:
         if sometimes_in.value:
             act_off()
             mode = Modes.IDLE
-
 
     # signal an input by flashing the neo near the pin
     if flash:
