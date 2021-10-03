@@ -8,7 +8,7 @@ import time
 from adafruit_circuitplayground import cp
 
 # setup
-cp.red_led = False;
+cp.red_led = False
 
 print("blink LED")
 

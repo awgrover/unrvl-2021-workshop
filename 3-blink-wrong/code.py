@@ -12,7 +12,7 @@ LIGHT_COLOR = ( 255, 0, 0 ) #( red, green, blue ) each 0-255
 OFF = ( 0, 0, 0 )
 
 # setup
-cp.red_led = False;
+cp.red_led = False
 cp.pixels.brightness = 0.05 # 0.0 to 1.0
 
 print("blink blocking")
