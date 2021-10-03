@@ -15,8 +15,8 @@ from every.every import Every
 LIGHT_COLOR = ( 255, 0, 0 ) #( red, green, blue ) each 0-255
 OFF = ( 0, 0, 0 )
 
-led1 = digitalio.DigitalInOut(board.D12)
-led2 = digitalio.DigitalInOut(board.D6)
+led1 = digitalio.DigitalInOut(board.A0)
+led2 = digitalio.DigitalInOut(board.A1)
 
 blink_led = Every(0.150)
 blink_neo = Every(0.500)
