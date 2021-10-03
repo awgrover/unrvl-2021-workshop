@@ -13,7 +13,7 @@ OFF = ( 0, 0, 0 )
 
 # setup
 cp.red_led = False;
-cp.pixels.brightness 0.05 # 0.0 to 1.0
+cp.pixels.brightness = 0.05 # 0.0 to 1.0
 
 print("blink blocking")
 
