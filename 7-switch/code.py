@@ -7,7 +7,7 @@ import board
 import digitalio
 import time
 from adafruit_circuitplayground import cp
-from every.every import Every
+from every.every import Timer
 
 # globals
 LIGHT_COLOR = ( 255, 0, 0 ) #( red, green, blue ) each 0-255
@@ -27,7 +27,7 @@ button1.switch_to_input(pull=digitalio.Pull.UP) # "open" is True
 button2 = digitalio.DigitalInOut(board.A3)
 button2.switch_to_input(pull=digitalio.Pull.UP) # "open" is True
 
-on_duration_expired = Every(1.0, 0.0)
+on_duration_expired = Timer(1.0)
 
 print("digital control")
 
