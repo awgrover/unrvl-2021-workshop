@@ -17,8 +17,6 @@ Neopixel 1: act
 Digital Pad A5: act
 Digital Pad A6/A7: alternating react 
 
-Modifiers:
-
 """
 
 # libraries
@@ -31,23 +29,30 @@ from adafruit_circuitplayground import cp
 from every.every import Timer
 from every.every import Every
 
-# globals
+# globals & setup
 LIGHT_COLOR = ( 255, 0, 0 ) #( red, green, blue ) each 0-255
 PRESSURE_COLOR = ( 0,0,255 )
+INPUT_COLOR = (0,255,0)
 OFF = ( 0, 0, 0 )
 MINIMUM_BRIGHTNESS = 0.01 # 0.0 to 1.0
+flash = None
 
-# set up
 # no setup for "touch"
 cp.pixels.brightness = MINIMUM_BRIGHTNESS
-cp.pixels[ 0 ] = PRESSURE_COLOR
+cp.pixels[ 2 ] = PRESSURE_COLOR
 # name our neo's by the pad they are near
-neoA5 = cp.pixels[ 1 ] 
-neoA5 = OFF
-neoA6 = cp.pixels[ 3 ] 
-neoA6 = OFF
-neoA7 = cp.pixels[ 4 ] 
-neoA7 = OFF
+neoA0 = 5
+neoA1 = 6
+neoA2 = 8
+neoA3 = 9
+neoA4 = 0
+neoA5 = 1
+neoA6 = 3
+neoA7 = 4
+cp.pixels[ neoA1 ] = OFF
+cp.pixels[ neoA5 ] = OFF
+cp.pixels[ neoA6 ] = OFF
+cp.pixels[ neoA7 ] = OFF
 
 plain_out = digitalio.DigitalInOut(board.A5)
 plain_out.switch_to_output()
@@ -58,17 +63,24 @@ alt2_out.switch_to_output()
 alt_selector = False # just alternate
 
 pressure = analogio.AnalogIn(board.A0)
-PRESSURE_ON = 4000 # test and find
+PRESSURE_ON = 5000 # test and find
 
-button1 = digitalio.DigitalInOut(board.A2)
-button1.switch_to_input(pull=digitalio.Pull.UP) # "open" is True
+immediate_in = digitalio.DigitalInOut(board.A2)
+immediate_in.switch_to_input(pull=digitalio.Pull.UP) # "open" is True
 
-button2 = digitalio.DigitalInOut(board.A3)
-button2.switch_to_input(pull=digitalio.Pull.UP) # "open" is True
+delay_in = digitalio.DigitalInOut(board.A3)
+delay_in.switch_to_input(pull=digitalio.Pull.UP) # "open" is True
+delay_action = Timer(0.75) # delayed action
+
+sometimes_in = digitalio.DigitalInOut(board.A4)
+sometimes_in.switch_to_input(pull=digitalio.Pull.UP) # "open" is True
+SOMETIMES_RATE = 0.8 # aka "damping"
 
 duration = Timer(1.0)
 attractor = Timer(random.uniform(4.0, 6.0))
 attractor.start()
+
+input_flashing = Timer(0.1)
 
 class Modes:
     # A list of things we could be doing
@@ -78,6 +90,10 @@ class Modes:
     ONCE = 1
     TOUCHA1 = 2
     PRESSURE = 3
+    IMMEDIATE_BUTTON = 4
+    DELAY_ONCE = 5
+    SOMETIMES_BUTTON = 6
+
 
 mode = Modes.IDLE # what are we doing?
 was_mode = Modes.NULL
@@ -86,30 +102,36 @@ was_mode = Modes.NULL
 def act_on():
     global alt_selector
 
-    neoA5 = LIGHT_COLOR
+    cp.pixels[ neoA5 ] = LIGHT_COLOR
     plain_out.value = True
 
+    # choose which alternating output
     if alt_selector:
         alt1_out.value = True
-    elif alt_selector:
+        cp.pixels[ neoA6 ] = LIGHT_COLOR
+    else:
         alt2_out.value = True
+        cp.pixels[ neoA7 ] = LIGHT_COLOR
     alt_selector = not alt_selector
 
 def act_off():
-    neoA5 = OFF
+    cp.pixels[ neoA5 ] = OFF
     plain_out.value = False
 
     # don't need to check alt_selector
     alt1_out.value = False
     alt2_out.value = False
+    cp.pixels[ neoA6 ] = OFF
+    cp.pixels[ neoA7 ] = OFF
 
 was_pressure = 0
 def track():
+    global was_pressure
     # things that constantly keep track
     raw = pressure.value / 65535.0 # convert to 0 .. 1.0
-    cp.brightness = max(MINIMUM_BRIGHTNESS, raw) # keep minimum
+    cp.pixels.brightness = max(MINIMUM_BRIGHTNESS, raw) # keep minimum
     if raw != was_pressure:
-        print("P ",raw)
+        # print("P ",raw, " B ",cp.pixels.brightness) # uncomment for tracking pressure
         was_pressure = raw
 
 print("logic")
@@ -122,20 +144,41 @@ while True:
 
         if cp.touch_A1:
             act_on()
+            flash = neoA1
             mode = Modes.TOUCHA1
 
         elif pressure.value > PRESSURE_ON:
             act_on()
             mode = Modes.PRESSURE
+            flash = neoA0
             print(pressure.value)
 
         elif attractor():
             act_on()
             mode = Modes.ONCE
             duration.start()
+        
+        # digital in "buttons"
+        # open = True, closed = False
+        elif not immediate_in.value:
+            act_on()
+            flash = neoA2
+            mode = Modes.IMMEDIATE_BUTTON
+        
+        elif not delay_in.value:
+            # wait for it...
+            flash = neoA3
+            mode = Modes.DELAY_ONCE
+            delay_action.start()
+
+        elif not sometimes_in.value:
+            if random.random() >= SOMETIMES_RATE:
+                act_on()
+                flash = neoA4
+                mode = Modes.SOMETIMES_BUTTON
 
     elif mode == Modes.TOUCHA1:
-        # wait for un-touch
+        # wait till un-touch
         if not cp.touch_A1:
             act_off()
             mode = Modes.IDLE
@@ -146,18 +189,50 @@ while True:
             mode = Modes.IDLE
 
     elif mode == Modes.PRESSURE:
-        if pressure.value < PRESSURE_ON: # ha! "1" hysteresis
+        # wait till "un" pressure
+        if pressure.value < (PRESSURE_ON * 0.9): # ha! hysteresis
+            act_off()
+
+    elif mode == Modes.IMMEDIATE_BUTTON:
+        # wait till "open"
+        if immediate_in.value:
             act_off()
             mode = Modes.IDLE
+
+    elif mode == Modes.DELAY_ONCE:
+        # waiting for delayed action
+        if delay_action():
+            act_on()
+            duration.start()
+            # continue on for "ONCE" duration
+            mode = Modes.ONCE 
+
+    elif mode == Modes.SOMETIMES_BUTTON:
+        # wait till "open"
+        if sometimes_in.value:
+            act_off()
+            mode = Modes.IDLE
+
+
+    # signal an input by flashing the neo near the pin
+    if flash:
+        if not input_flashing.running:
+            cp.pixels[ flash ] = INPUT_COLOR
+            input_flashing.start()
+        elif input_flashing():
+            cp.pixels[ flash ] = OFF
+            flash = None
 
     # doing something:
     if mode != Modes.IDLE:
         # if we are doing something, reset time-till-attractor
         attractor.start()
 
+    track()
+
     # debugging, watch things change
     if mode != was_mode:
-        print(was_mode," -> ", mode);
+        print(was_mode," -> ", mode)
         was_mode = mode
 
     time.sleep( 0.01 )
@@ -166,23 +241,23 @@ while True:
     if not button2.value:
         # closed: restart timer, i.e. "not expired"
         on_duration_expired.start()
-        neoA5 = LIGHT_COLOR
+        cp.pixels[ neoA5 ] = LIGHT_COLOR
         led1.value = True
 
     # End "still on"?
     if on_duration_expired():
         # only once (each) at end of timer
-        neoA5 = OFF
+        cp.pixels[ neoA5 ] = OFF
         led1.value = False
 
     # Only concern ourselves with button1 if button2 isn't still on
     elif not on_duration_expired.running:
 
         if not button1.value:
-            neoA5 = LIGHT_COLOR
+            cp.pixels[ neoA5 ] = LIGHT_COLOR
             led1.value = True
         else:
-            neoA5 = OFF
+            cp.pixels[ neoA5 ] = OFF
             led1.value = False
 
         # slow the loop so we can upload
