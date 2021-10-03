@@ -10,6 +10,8 @@ from adafruit_circuitplayground import cp
 # setup
 cp.red_led = False;
 
+print("blink LED")
+
 # loop
 while True:
     cp.red_led = True

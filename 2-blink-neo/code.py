@@ -12,7 +12,9 @@ LIGHT_COLOR = ( 255, 0, 0 ) #( red, green, blue ) each 0-255
 OFF = ( 0, 0, 0 )
 
 # setup
-cp.pixels.brightness = 0.6 # 0.0 to 1.0
+cp.pixels.brightness = 0.05 # 0.0 to 1.0
+
+print("blink neo")
 
 # loop
 while True:
