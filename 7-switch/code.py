@@ -1,5 +1,5 @@
 """
-Respond to a switch
+Respond to an external button on A2 or A3
 """
 
 # libraries
@@ -27,7 +27,8 @@ button1.switch_to_input(pull=digitalio.Pull.UP) # "open" is True
 button2 = digitalio.DigitalInOut(board.A3)
 button2.switch_to_input(pull=digitalio.Pull.UP) # "open" is True
 
-on_duration_expired = Timer(1.0)
+# "if x'ed...
+persisted_button2 = Timer(1.0)
 
 print("digital control")
 
@@ -35,20 +36,22 @@ print("digital control")
 while True:
 
     # Start "still on"?
+    # "closed" gives false, "open" gives true
     if not button2.value:
-        # closed: restart timer, i.e. "not expired"
-        on_duration_expired.start()
+        # restart timer, i.e. "persist till"
+        persisted_button2.start()
         cp.pixels[ 1 ] = LIGHT_COLOR
         led1.value = True
 
-    # End "still on"?
-    if on_duration_expired():
-        # only once (each) at end of timer
+    # End of "still on"?
+    # only once (each) at end of timer
+    if persisted_button2():
         cp.pixels[ 1 ] = OFF
         led1.value = False
 
     # Only concern ourselves with button1 if button2 isn't still on
-    elif not on_duration_expired.running:
+    # Because we use the same neo-pixel
+    elif not persisted_button2.running:
 
         if not button1.value:
             cp.pixels[ 1 ] = LIGHT_COLOR
@@ -57,5 +60,4 @@ while True:
             cp.pixels[ 1 ] = OFF
             led1.value = False
 
-        # slow the loop so we can upload
-        time.sleep( 0.01 )
+    time.sleep(0.001) # allow reload

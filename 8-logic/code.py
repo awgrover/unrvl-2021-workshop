@@ -10,12 +10,13 @@ from adafruit_circuitplayground import cp
 # globals
 LIGHT_COLOR = ( 255, 0, 0 ) #( red, green, blue ) each 0-255
 OFF = ( 0, 0, 0 )
+
+# set up
+# no setup for "touch"
 automatic = Timer(8)
 automatic.start() # need to start initially
 on_duration = Timer(1)
 
-# set up
-# no setup for "touch"
 cp.pixels.brightness = 0.05 # 0.0 to 1.0
 cp.pixels[ 1 ] = OFF
 

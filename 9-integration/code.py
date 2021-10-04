@@ -36,11 +36,6 @@ PRESSURE_COLOR = ( 0,0,255 )
 INPUT_COLOR = (0,255,0)
 OFF = ( 0, 0, 0 )
 MINIMUM_BRIGHTNESS = 0.01 # 0.0 to 1.0
-flash = None
-
-# no setup for "touch"
-cp.pixels.brightness = MINIMUM_BRIGHTNESS
-cp.pixels[ 2 ] = PRESSURE_COLOR
 # name our neo's by the pad they are near
 neoA0 = 5
 neoA1 = 6
@@ -50,6 +45,13 @@ neoA4 = 0
 neoA5 = 1
 neoA6 = 3
 neoA7 = 4
+PRESSURE_ON = 5000 # test and find
+SOMETIMES_RATE = 0.8 # aka "damping"
+flash = None
+
+# no setup for "touch"
+cp.pixels.brightness = MINIMUM_BRIGHTNESS
+cp.pixels[ 2 ] = PRESSURE_COLOR
 
 plain_out = digitalio.DigitalInOut(board.A5)
 plain_out.switch_to_output()
@@ -60,7 +62,6 @@ alt2_out.switch_to_output()
 alt_selector = False # just alternate
 
 pressure = analogio.AnalogIn(board.A0)
-PRESSURE_ON = 5000 # test and find
 
 immediate_in = digitalio.DigitalInOut(board.A2)
 immediate_in.switch_to_input(pull=digitalio.Pull.UP) # "open" is True
@@ -71,7 +72,6 @@ delay_action = Timer(0.75) # delayed action
 
 sometimes_in = digitalio.DigitalInOut(board.A4)
 sometimes_in.switch_to_input(pull=digitalio.Pull.UP) # "open" is True
-SOMETIMES_RATE = 0.8 # aka "damping"
 
 duration = Timer(1.0)
 attractor = Timer(random.uniform(4.0, 6.0))
@@ -230,31 +230,4 @@ while True:
         print(was_mode," -> ", mode)
         was_mode = mode
 
-    time.sleep( 0.01 )
-"""
-    # Start "still on"?
-    if not button2.value:
-        # closed: restart timer, i.e. "not expired"
-        on_duration_expired.start()
-        cp.pixels[ neoA5 ] = LIGHT_COLOR
-        led1.value = True
-
-    # End "still on"?
-    if on_duration_expired():
-        # only once (each) at end of timer
-        cp.pixels[ neoA5 ] = OFF
-        led1.value = False
-
-    # Only concern ourselves with button1 if button2 isn't still on
-    elif not on_duration_expired.running:
-
-        if not button1.value:
-            cp.pixels[ neoA5 ] = LIGHT_COLOR
-            led1.value = True
-        else:
-            cp.pixels[ neoA5 ] = OFF
-            led1.value = False
-
-        # slow the loop so we can upload
-        time.sleep( 0.01 )
-"""
+    time.sleep(0.001) # allow reload

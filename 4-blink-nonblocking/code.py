@@ -1,6 +1,6 @@
 """
 Blink built-in led and neo-pixel.
-Blocking.
+Non-blocking.
 """
 
 # libraries
@@ -11,10 +11,12 @@ from every.every import Every
 # globals
 LIGHT_COLOR = ( 255, 0, 0 ) #( red, green, blue ) each 0-255
 OFF = ( 0, 0, 0 )
-blink_led = Every(0.150)
-blink_neo = Every(0.500)
 
 # setup
+# periodics
+blink_led = Every(0.150) # in seconds
+blink_neo = Every(0.500)
+
 cp.red_led = False
 cp.pixels.brightness = 0.05 # 0.0 to 1.0
 cp.pixels[ 1 ] = OFF
@@ -32,3 +34,5 @@ while True:
             cp.pixels[ 1 ] = LIGHT_COLOR
         else:
             cp.pixels[ 1 ] = OFF
+
+    time.sleep(0.001) # allow reload
