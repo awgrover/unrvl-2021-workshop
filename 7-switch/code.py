@@ -18,7 +18,7 @@ OFF = ( 0, 0, 0 )
 cp.pixels.brightness = 0.05 # 0.0 to 1.0
 cp.pixels[ 1 ] = OFF
 
-led1 = digitalio.DigitalInOut(board.A0)
+led1 = digitalio.DigitalInOut(board.A1)
 led1.switch_to_output()
 
 button1 = digitalio.DigitalInOut(board.A2)

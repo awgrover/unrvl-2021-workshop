@@ -16,8 +16,8 @@ LIGHT_COLOR = ( 255, 0, 0 ) #( red, green, blue ) each 0-255
 OFF = ( 0, 0, 0 )
 
 # setup
-led1 = digitalio.DigitalInOut(board.A0)
-led2 = digitalio.DigitalInOut(board.A1)
+led1 = digitalio.DigitalInOut(board.A1)
+led2 = digitalio.DigitalInOut(board.A2)
 
 blink_led = Every(0.150)
 blink_neo = Every(0.500)

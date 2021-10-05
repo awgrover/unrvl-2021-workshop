@@ -4,8 +4,7 @@
     Inputs:
 
     Touch A1: react
-    Pressure/Resistance A0: brightness, react
-    Digital A2: react
+    Pressure/Resistance A2: brightness, react
     Digital A3: react after a delay
     Digital A4: react sometimes
     Periodically: react if nothing else recently
@@ -14,7 +13,7 @@
 
     Neopixel 2: brightness
     Neopixel 1,3,4: act
-    Neopixels near inputs: flash green on inpu
+    Neopixels near inputs: flash green on input
     Digital Pad A5: act
     Digital Pad A6/A7: alternating react 
 
@@ -57,14 +56,11 @@ plain_out = digitalio.DigitalInOut(board.A5)
 plain_out.switch_to_output()
 alt1_out = digitalio.DigitalInOut(board.A6)
 alt1_out.switch_to_output()
-alt2_out = digitalio.DigitalInOut(board.A7)
+alt2_out = digitalio.DigitalInOut(board.TX)
 alt2_out.switch_to_output()
 alt_selector = False # just alternate
 
-pressure = analogio.AnalogIn(board.A0)
-
-immediate_in = digitalio.DigitalInOut(board.A2)
-immediate_in.switch_to_input(pull=digitalio.Pull.UP) # "open" is True
+pressure = analogio.AnalogIn(board.A2) # a1..a6 on ble
 
 delay_in = digitalio.DigitalInOut(board.A3)
 delay_in.switch_to_input(pull=digitalio.Pull.UP) # "open" is True
@@ -86,7 +82,6 @@ class Modes:
     ONCE = 1
     TOUCHA1 = 2
     PRESSURE = 3
-    IMMEDIATE_BUTTON = 4
     DELAY_ONCE = 5
     SOMETIMES_BUTTON = 6
 
@@ -156,10 +151,6 @@ while True:
         
         # digital in "buttons"
         # open = True, closed = False
-        elif not immediate_in.value:
-            act_on()
-            flash = neoA2
-            mode = Modes.IMMEDIATE_BUTTON
         
         elif not delay_in.value:
             # wait for it...
@@ -175,7 +166,7 @@ while True:
 
     elif mode == Modes.TOUCHA1:
         # wait till un-touch
-        if not cp.touch_A1:
+        if not cp.touch_A1: # not AUDIO
             act_off()
             mode = Modes.IDLE
 
@@ -188,12 +179,6 @@ while True:
         # wait till "un" pressure
         if pressure.value < (PRESSURE_ON * 0.9): # ha! hysteresis
             act_off()
-
-    elif mode == Modes.IMMEDIATE_BUTTON:
-        # wait till "open"
-        if immediate_in.value:
-            act_off()
-            mode = Modes.IDLE
 
     elif mode == Modes.DELAY_ONCE:
         # waiting for delayed action
